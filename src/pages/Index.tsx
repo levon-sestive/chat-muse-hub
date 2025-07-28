@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, MessageCircle, Brain, Headphones } from "lucide-react";
+import ChatRecommendation from "@/components/ChatRecommendation";
 
 const Index = () => {
   return (
@@ -73,6 +74,27 @@ const Index = () => {
               </Button>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Example Chat Recommendations */}
+        <div className="space-y-4 mb-12">
+          <h2 className="text-2xl font-semibold text-center mb-6">Chat Recommendations Preview</h2>
+          
+          <ChatRecommendation
+            title="The Body Keeps the Score"
+            author="Bessel van der Kolk"
+            type="book"
+            description="A groundbreaking exploration of how trauma affects the body and mind, offering innovative approaches to recovery through body awareness and healing."
+            reason="Based on your interest in understanding trauma responses and healing mechanisms."
+          />
+          
+          <ChatRecommendation
+            title="On Being with Krista Tippett"
+            author="Krista Tippett"
+            type="podcast"
+            description="Thoughtful conversations about meaning, spirituality, and what it means to be human in our complex world."
+            reason="Perfect for your journey of self-discovery and mindfulness practice."
+          />
         </div>
 
         {/* Quick Stats or Recent Activity could go here */}
