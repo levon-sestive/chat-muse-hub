@@ -1,14 +1,12 @@
 import { useState } from "react";
-import { Book, Headphones, Filter, Search } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Search, Book, Headphones, ChevronDown, ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RecommendationCard } from "@/components/RecommendationCard";
-import { Recommendation, RecommendationType, RecommendationStatus } from "@/types/recommendations";
+import { Recommendation, RecommendationType, RecommendationStatus, statusLabels } from "@/types/recommendations";
+import { cn } from "@/lib/utils";
 
-// Mock data - in a real app, this would come from your backend/state management
+// Mock data
 const mockRecommendations: Recommendation[] = [
   {
     id: "1",
@@ -57,6 +55,7 @@ export default function Recommendations() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<"all" | RecommendationType>("all");
   const [selectedStatus, setSelectedStatus] = useState<"all" | RecommendationStatus>("all");
+  const [expandedReason, setExpandedReason] = useState<string | null>(null);
 
   const handleStatusChange = (id: string, newStatus: RecommendationStatus) => {
     setRecommendations(prev =>
@@ -75,131 +74,166 @@ export default function Recommendations() {
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const getStatusCounts = () => {
-    return recommendations.reduce((acc, rec) => {
-      acc[rec.status] = (acc[rec.status] || 0) + 1;
-      return acc;
-    }, {} as Record<RecommendationStatus, number>);
+  const getStatusColor = (status: RecommendationStatus) => {
+    switch (status) {
+      case 'want-to-read': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'reading': return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'completed': return 'bg-green-50 text-green-700 border-green-200';
+      case 'not-interested': return 'bg-gray-50 text-gray-600 border-gray-200';
+      default: return 'bg-gray-50 text-gray-600 border-gray-200';
+    }
   };
 
-  const statusCounts = getStatusCounts();
-
   return (
-    <div className="min-h-screen bg-gradient-soft">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-6 py-8 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Your Recommendations</h1>
-          <p className="text-muted-foreground">
-            Books and podcasts suggested during our conversations to support your journey
-          </p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card className="border-0 bg-therapeutic-muted/30">
-            <CardContent className="p-4 text-center">
-              <Badge variant="want-to-read" className="mb-2">
-                {statusCounts['want-to-read'] || 0}
-              </Badge>
-              <p className="text-sm text-muted-foreground">Want to Read</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-0 bg-warning-muted/30">
-            <CardContent className="p-4 text-center">
-              <Badge variant="reading" className="mb-2">
-                {statusCounts['reading'] || 0}
-              </Badge>
-              <p className="text-sm text-muted-foreground">Reading</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-0 bg-success-muted/30">
-            <CardContent className="p-4 text-center">
-              <Badge variant="completed" className="mb-2">
-                {statusCounts['completed'] || 0}
-              </Badge>
-              <p className="text-sm text-muted-foreground">Completed</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-0 bg-neutral-muted/30">
-            <CardContent className="p-4 text-center">
-              <Badge variant="not-interested" className="mb-2">
-                {statusCounts['not-interested'] || 0}
-              </Badge>
-              <p className="text-sm text-muted-foreground">Not Interested</p>
-            </CardContent>
-          </Card>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Recommendations</h1>
+          <p className="text-gray-600">Books and podcasts suggested during our conversations</p>
         </div>
 
         {/* Filters */}
-        <Card className="mb-8 border-0 shadow-soft">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Filter className="w-5 h-5 text-therapeutic" />
-              Filter & Search
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Search recommendations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              
-              <Tabs value={selectedType} onValueChange={(value) => setSelectedType(value as any)}>
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="book" className="flex items-center gap-1">
-                    <Book className="w-3 h-3" />
-                    Books
-                  </TabsTrigger>
-                  <TabsTrigger value="podcast" className="flex items-center gap-1">
-                    <Headphones className="w-3 h-3" />
-                    Podcasts
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-              
-              <Tabs value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as any)}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="all">All Status</TabsTrigger>
-                  <TabsTrigger value="want-to-read">Want to Read</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recommendations Grid */}
-        {filteredRecommendations.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredRecommendations.map((recommendation) => (
-              <RecommendationCard
-                key={recommendation.id}
-                recommendation={recommendation}
-                onStatusChange={handleStatusChange}
+        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Search recommendations..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 border-gray-200"
               />
-            ))}
+            </div>
+            
+            <Select value={selectedType} onValueChange={(value) => setSelectedType(value as any)}>
+              <SelectTrigger className="border-gray-200">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="book">Books</SelectItem>
+                <SelectItem value="podcast">Podcasts</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as any)}>
+              <SelectTrigger className="border-gray-200">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="want-to-read">Want to Read</SelectItem>
+                <SelectItem value="reading">Reading</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="not-interested">Not Interested</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        ) : (
-          <Card className="text-center py-12 border-0 bg-muted/30">
-            <CardContent>
-              <div className="text-muted-foreground mb-4">
-                <Book className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium">No recommendations found</p>
-                <p className="text-sm">Try adjusting your filters or search terms</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        </div>
+
+        {/* Recommendations List */}
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          {filteredRecommendations.length > 0 ? (
+            <div className="divide-y divide-gray-100">
+              {filteredRecommendations.map((recommendation) => (
+                <div key={recommendation.id} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className="flex-shrink-0 mt-1">
+                        {recommendation.type === 'book' ? (
+                          <Book className="w-5 h-5 text-gray-500" />
+                        ) : (
+                          <Headphones className="w-5 h-5 text-gray-500" />
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 mb-1">
+                          {recommendation.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                          by {recommendation.author}
+                        </p>
+                        {recommendation.description && (
+                          <p className="text-sm text-gray-500 mb-3">
+                            {recommendation.description}
+                          </p>
+                        )}
+                        
+                        <div className="flex items-center gap-4 mb-3">
+                          <span className={cn(
+                            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                            getStatusColor(recommendation.status)
+                          )}>
+                            {statusLabels[recommendation.status]}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            Recommended {recommendation.recommendedAt.toLocaleDateString()}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setExpandedReason(
+                              expandedReason === recommendation.id ? null : recommendation.id
+                            )}
+                            className="text-xs text-gray-600 hover:text-gray-900 h-7 px-2"
+                          >
+                            {expandedReason === recommendation.id ? (
+                              <>
+                                <ChevronUp className="w-3 h-3 mr-1" />
+                                Hide reason
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="w-3 h-3 mr-1" />
+                                Why recommended?
+                              </>
+                            )}
+                          </Button>
+
+                          <Select
+                            value={recommendation.status}
+                            onValueChange={(value: RecommendationStatus) => 
+                              handleStatusChange(recommendation.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-36 h-7 text-xs border-gray-200">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="want-to-read">Want to Read</SelectItem>
+                              <SelectItem value="reading">Reading</SelectItem>
+                              <SelectItem value="completed">Completed</SelectItem>
+                              <SelectItem value="not-interested">Not Interested</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {expandedReason === recommendation.id && (
+                          <div className="mt-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-200">
+                            <p className="text-sm text-gray-700 leading-relaxed">
+                              {recommendation.reason}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Book className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-lg font-medium text-gray-600">No recommendations found</p>
+              <p className="text-sm text-gray-500">Try adjusting your filters or search terms</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
